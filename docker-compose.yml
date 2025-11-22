@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=products
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONTENTFUL_SPACE_ID=bbd24zg4yngm
+      - CONTENTFUL_ACCESS_TOKEN=wXfbqDOLix1ksxVH8NcRX1oE4KYytPW-ULqpXCxx3RU
+      - CONTENTFUL_ENVIRONMENT=master
+      - CONTENTFUL_CONTENT_TYPE=product
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=products
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  cron:
+    build:
+      context: ./cron
+      dockerfile: Dockerfile
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

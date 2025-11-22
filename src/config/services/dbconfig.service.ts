@@ -12,11 +12,11 @@ export class DbConfigService {
    getDbConfig(): TypeOrmModuleOptions {
     const dbConfig: TypeOrmModuleOptions = {
       type: 'postgres',
-      host: this.configService.get('POSTGRES_HOST', 'localhost'),
-      port: parseInt(this.configService.get('POSTGRES_PORT', '5432'), 10),
-      username: this.configService.get('POSTGRES_USER', 'postgres'),
-      password: this.configService.get('POSTGRES_PASSWORD', 'postgres'),
-      database: this.configService.get('POSTGRES_DB', 'postgres'),
+      host: this.configService.get<string>('POSTGRES_HOST', 'localhost'),
+      port: this.configService.get<number>('POSTGRES_PORT', 5432),
+      username: this.configService.get<string>('POSTGRES_USER', 'postgres'),
+      password: this.configService.get<string>('POSTGRES_PASSWORD', 'postgres'),
+      database: this.configService.get<string>('POSTGRES_DB', 'postgres'),
       entities: [__dirname + '/../../**/*.entity.{ts,js}'],
       synchronize: true,
       cache: false,

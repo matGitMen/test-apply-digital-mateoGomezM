@@ -19,14 +19,20 @@
         "common/*"
       ],
       "@providers/*": [
-        "publicModule/providers/*"
+        "products/providers/*"
       ],
       "@controllers/*": [
-        "publicModule/controllers/*"
+        "products/controllers/*"
       ],
       "@entity/*": [
-        "publicModule/providers/*"
+        "products/providers/*"
       ],
+      "@reports/*": [
+        "reports/*"
+      ],
+      "@config/*": [
+        "config/*"
+      ]
     },
     "incremental": true,
     "skipLibCheck": true,
