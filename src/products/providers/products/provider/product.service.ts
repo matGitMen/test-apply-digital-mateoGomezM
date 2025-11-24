@@ -37,7 +37,6 @@ export class ProductService implements IProductService {
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
-    // Exclude soft-deleted products
     queryBuilder.where('product.deletedAt IS NULL');
 
     if (name) {
@@ -74,7 +73,6 @@ export class ProductService implements IProductService {
 
   async softDelete(id: string): Promise<void> {
     await this.productRepository.softDelete(id);
-    // Invalidate all cache on change
     await this.invalidateCache();
   }
 
@@ -83,7 +81,6 @@ export class ProductService implements IProductService {
       this.logger.log('Invalidating cache...');
       const store = (this.cacheManager as any).store;
 
-      // Check if store supports keys method (Redis usually does)
       if (store && typeof store.keys === 'function') {
         const keys = await store.keys('products_*');
         this.logger.log(`Found ${keys.length} cache keys to invalidate: ${keys.join(', ')}`);
@@ -103,7 +100,6 @@ export class ProductService implements IProductService {
       } else {
           this.logger.warn('Cache store does not support "keys" method. Cannot invalidate specific keys.');
 
-          // Fallback: clear entire cache
           if (typeof (this.cacheManager as any).clear === 'function') {
               this.logger.log('Using cacheManager.clear() as fallback');
               await (this.cacheManager as any).clear();
@@ -138,15 +134,12 @@ export class ProductService implements IProductService {
         const existingProduct = await this.productRepository.findOne({ where: { contentfulId: productEntity.contentfulId }, withDeleted: true });
 
         if (existingProduct) {
-            // Update existing
             await this.productRepository.update(existingProduct.id, productEntity);
         } else {
-            // Create new
             await this.productRepository.save(productEntity);
         }
       }
       this.logger.log(`Successfully fetched and updated ${items.length} products.`);
-      // Invalidate cache after sync
       await this.invalidateCache();
     } catch (error) {
       this.logger.error('Error fetching from Contentful', error);

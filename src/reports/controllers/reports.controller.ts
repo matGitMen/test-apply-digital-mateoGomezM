@@ -20,7 +20,9 @@ export class ReportsController {
   }
 
   @Get('non-deleted-percentage')
-  async getNonDeletedPercentage(@Query('withPrice') withPrice?: string, @Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
+  async getNonDeletedPercentage(@Query('withPrice') withPrice?: string,
+   @Query('startDate') startDate?: string,
+   @Query('endDate') endDate?: string) {
     const strategy = new NonDeletedProductsReport();
     const params: any = {};
 

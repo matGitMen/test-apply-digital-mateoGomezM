@@ -23,7 +23,7 @@ describe('GetProductController', () => {
     controller = module.get<GetProductController>(GetProductController);
     productService = module.get<ProductService>(ProductService);
 
-    // Reset all mocks before each test
+
     jest.clearAllMocks();
   });
 

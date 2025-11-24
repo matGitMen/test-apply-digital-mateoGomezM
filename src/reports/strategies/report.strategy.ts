@@ -7,13 +7,13 @@ export interface IReportStrategy {
 
 export class DeletedProductsReport implements IReportStrategy {
   async generate(repo: Repository<ProductEntity>): Promise<any> {
-    // Count all products (including deleted)
+
     const totalCount = await repo
       .createQueryBuilder('product')
       .withDeleted()
       .getCount();
 
-    // Count only deleted products
+
     const deletedCount = await repo
       .createQueryBuilder('product')
       .withDeleted()
@@ -29,8 +29,9 @@ export class DeletedProductsReport implements IReportStrategy {
 }
 
 export class NonDeletedProductsReport implements IReportStrategy {
-  async generate(repo: Repository<ProductEntity>, params?: { withPrice?: boolean; startDate?: Date; endDate?: Date }): Promise<any> {
-    const qb = repo.createQueryBuilder('product'); // Default is non-deleted
+  async generate(repo: Repository<ProductEntity>, params?: { withPrice?: boolean;
+    startDate?: Date; endDate?: Date }): Promise<any> {
+    const qb = repo.createQueryBuilder('product');
 
     if (params?.withPrice !== undefined) {
         if (params.withPrice) {
@@ -48,7 +49,7 @@ export class NonDeletedProductsReport implements IReportStrategy {
     }
 
     const count = await qb.getCount();
-    const totalNonDeleted = await repo.count(); // All non-deleted
+    const totalNonDeleted = await repo.count();
 
     return {
       count,
