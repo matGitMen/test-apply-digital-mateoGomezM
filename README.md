@@ -276,18 +276,3 @@ cron/                      # Docker cron service
 - `typescript`, `ts-node`: TypeScript support
 - `eslint`, `prettier`: Code quality
 
-## AI Usage Disclosure
-
-This project was developed with assistance from AI tools (Google Gemini) for:
-- Code generation and refactoring
-- Documentation writing
-- Test creation
-- Architecture design suggestions
-
-All AI-generated code was reviewed, tested, and adapted to meet project requirements.
-
----
-
-**Author**: Mateo Gomez
-**Date**: November 2025
-**Version**: 1.0.0
