@@ -39,6 +39,7 @@ const mockConfigService = {
       CONTENTFUL_ACCESS_TOKEN: 'test-token',
       CONTENTFUL_CONTENT_TYPE: 'product',
     };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return config[key];
   }),
 };
@@ -52,7 +53,7 @@ const mockCacheManager = {
     keys: jest.fn().mockResolvedValue([]),
     del: jest.fn(),
     reset: jest.fn().mockResolvedValue(undefined),
-  }
+  },
 };
 
 describe('ProductService', () => {
@@ -65,7 +66,10 @@ describe('ProductService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductService,
-        { provide: getRepositoryToken(ProductEntity), useFactory: mockProductRepository },
+        {
+          provide: getRepositoryToken(ProductEntity),
+          useFactory: mockProductRepository,
+        },
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
@@ -73,7 +77,9 @@ describe('ProductService', () => {
     }).compile();
 
     service = module.get<ProductService>(ProductService);
-    repository = module.get<Repository<ProductEntity>>(getRepositoryToken(ProductEntity));
+    repository = module.get<Repository<ProductEntity>>(
+      getRepositoryToken(ProductEntity),
+    );
     cacheManager = module.get(CACHE_MANAGER);
     httpService = module.get<HttpService>(HttpService);
 
@@ -87,7 +93,13 @@ describe('ProductService', () => {
 
   describe('findAll', () => {
     it('should return cached data if available', async () => {
-      const cachedResult = { data: [], total: 0, page: 1, limit: 5, totalPages: 0 };
+      const cachedResult = {
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 5,
+        totalPages: 0,
+      };
       mockCacheManager.get.mockResolvedValue(cachedResult);
 
       const result = await service.findAll({ page: 1, limit: 5 }, {});
@@ -116,10 +128,12 @@ describe('ProductService', () => {
 
       await service.findAll({ page: 1, limit: 5 }, { name: 'Test Product' });
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('product.deletedAt IS NULL');
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'product.deletedAt IS NULL',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'product.name ILIKE :name',
-        { name: '%Test Product%' }
+        { name: '%Test Product%' },
       );
     });
 
@@ -130,22 +144,25 @@ describe('ProductService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'product.category = :category',
-        { category: 'Electronics' }
+        { category: 'Electronics' },
       );
     });
 
     it('should apply price range filters when provided', async () => {
       mockCacheManager.get.mockResolvedValue(null);
 
-      await service.findAll({ page: 1, limit: 5 }, { minPrice: 10, maxPrice: 100 });
+      await service.findAll(
+        { page: 1, limit: 5 },
+        { minPrice: 10, maxPrice: 100 },
+      );
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'product.price >= :minPrice',
-        { minPrice: 10 }
+        { minPrice: 10 },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'product.price <= :maxPrice',
-        { maxPrice: 100 }
+        { maxPrice: 100 },
       );
     });
 
@@ -235,13 +252,18 @@ describe('ProductService', () => {
         },
       };
 
-      const existingProduct = { id: 'existing-uuid', contentfulId: 'contentful-1' };
+      const existingProduct = {
+        id: 'existing-uuid',
+        contentfulId: 'contentful-1',
+      };
       mockHttpService.get.mockReturnValue(of(mockContentfulResponse));
       (repository.findOne as jest.Mock).mockResolvedValue(existingProduct);
 
       await service.fetchFromContentful();
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(repository.update).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(repository.save).not.toHaveBeenCalled();
     });
 

@@ -4,6 +4,6 @@ import { ConfigService } from '@nestjs/config';
 
 @Module({
   providers: [DbConfigService, ConfigService],
-  exports: [DbConfigService]
+  exports: [DbConfigService],
 })
 export class AppConfigModule {}

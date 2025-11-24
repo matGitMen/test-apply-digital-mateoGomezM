@@ -10,19 +10,14 @@ const mockProductService = {
 
 describe('GetProductController', () => {
   let controller: GetProductController;
-  let productService: ProductService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GetProductController],
-      providers: [
-        { provide: ProductService, useValue: mockProductService },
-      ],
+      providers: [{ provide: ProductService, useValue: mockProductService }],
     }).compile();
 
     controller = module.get<GetProductController>(GetProductController);
-    productService = module.get<ProductService>(ProductService);
-
 
     jest.clearAllMocks();
   });
@@ -47,7 +42,10 @@ describe('GetProductController', () => {
 
       const result = await controller.getAllProducts(paginationDto, filterDto);
 
-      expect(mockProductService.findAll).toHaveBeenCalledWith(paginationDto, filterDto);
+      expect(mockProductService.findAll).toHaveBeenCalledWith(
+        paginationDto,
+        filterDto,
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -57,7 +55,10 @@ describe('GetProductController', () => {
 
       await controller.getAllProducts(paginationDto, filterDto);
 
-      expect(mockProductService.findAll).toHaveBeenCalledWith(paginationDto, filterDto);
+      expect(mockProductService.findAll).toHaveBeenCalledWith(
+        paginationDto,
+        filterDto,
+      );
     });
 
     it('should apply multiple filters', async () => {
@@ -71,7 +72,10 @@ describe('GetProductController', () => {
 
       await controller.getAllProducts(paginationDto, filterDto);
 
-      expect(mockProductService.findAll).toHaveBeenCalledWith(paginationDto, filterDto);
+      expect(mockProductService.findAll).toHaveBeenCalledWith(
+        paginationDto,
+        filterDto,
+      );
     });
   });
 

@@ -7,12 +7,10 @@ export interface IReportStrategy {
 
 export class DeletedProductsReport implements IReportStrategy {
   async generate(repo: Repository<ProductEntity>): Promise<any> {
-
     const totalCount = await repo
       .createQueryBuilder('product')
       .withDeleted()
       .getCount();
-
 
     const deletedCount = await repo
       .createQueryBuilder('product')
@@ -23,22 +21,25 @@ export class DeletedProductsReport implements IReportStrategy {
     return {
       total: totalCount,
       deleted: deletedCount,
-      percentage: totalCount === 0 ? 0 : Math.round((deletedCount / totalCount) * 100),
+      percentage:
+        totalCount === 0 ? 0 : Math.round((deletedCount / totalCount) * 100),
     };
   }
 }
 
 export class NonDeletedProductsReport implements IReportStrategy {
-  async generate(repo: Repository<ProductEntity>, params?: { withPrice?: boolean;
-    startDate?: Date; endDate?: Date }): Promise<any> {
+  async generate(
+    repo: Repository<ProductEntity>,
+    params?: { withPrice?: boolean; startDate?: Date; endDate?: Date },
+  ): Promise<any> {
     const qb = repo.createQueryBuilder('product');
 
     if (params?.withPrice !== undefined) {
-        if (params.withPrice) {
-             qb.andWhere('product.price IS NOT NULL');
-        } else {
-             qb.andWhere('product.price IS NULL');
-        }
+      if (params.withPrice) {
+        qb.andWhere('product.price IS NOT NULL');
+      } else {
+        qb.andWhere('product.price IS NULL');
+      }
     }
 
     if (params?.startDate && params?.endDate) {
@@ -60,13 +61,18 @@ export class NonDeletedProductsReport implements IReportStrategy {
 
 export class ProductsByCategoryReport implements IReportStrategy {
   async generate(repo: Repository<ProductEntity>): Promise<any> {
+    interface CategoryCount {
+      category: string;
+      count: string;
+    }
+
     const result = await repo
       .createQueryBuilder('product')
       .select('product.category', 'category')
       .addSelect('COUNT(product.id)', 'count')
       .where('product.deletedAt IS NULL')
       .groupBy('product.category')
-      .getRawMany();
+      .getRawMany<CategoryCount>();
 
     const total = await repo.count();
 

@@ -23,8 +23,10 @@ import * as redisStore from 'cache-manager-redis-store';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule, AppConfigModule],
       inject: [DbConfigService],
-      useFactory: async (dbConfigService: DbConfigService): Promise<TypeOrmModuleOptions> => {
-        const dbConfig = await dbConfigService.getDbConfig();
+      useFactory: async (
+        dbConfigService: DbConfigService,
+      ): Promise<TypeOrmModuleOptions> => {
+        const dbConfig = dbConfigService.getDbConfig();
         return {
           ...dbConfig,
         };

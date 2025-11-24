@@ -9,7 +9,7 @@ export class DbConfigService {
   /**
    * Get DB configuration for Postgres (Docker Compose)
    */
-   getDbConfig(): TypeOrmModuleOptions {
+  getDbConfig(): TypeOrmModuleOptions {
     const dbConfig: TypeOrmModuleOptions = {
       type: 'postgres',
       host: this.configService.get<string>('POSTGRES_HOST', 'localhost'),
