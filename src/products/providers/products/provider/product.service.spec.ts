@@ -59,7 +59,6 @@ const mockCacheManager = {
 describe('ProductService', () => {
   let service: ProductService;
   let repository: Repository<ProductEntity>;
-  let cacheManager: any;
   let httpService: HttpService;
 
   beforeEach(async () => {
@@ -80,7 +79,6 @@ describe('ProductService', () => {
     repository = module.get<Repository<ProductEntity>>(
       getRepositoryToken(ProductEntity),
     );
-    cacheManager = module.get(CACHE_MANAGER);
     httpService = module.get<HttpService>(HttpService);
 
     // Reset all mocks before each test
@@ -261,9 +259,8 @@ describe('ProductService', () => {
 
       await service.fetchFromContentful();
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(repository.update).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+
       expect(repository.save).not.toHaveBeenCalled();
     });
 

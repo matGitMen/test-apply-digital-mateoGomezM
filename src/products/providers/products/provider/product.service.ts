@@ -89,21 +89,17 @@ export class ProductService implements IProductService {
   private async invalidateCache(): Promise<void> {
     try {
       this.logger.log('Invalidating cache...');
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
       const store = (this.cacheManager as any).store;
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (store && typeof store.keys === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const keys = await store.keys('products_*');
 
         this.logger.log(
           `Found ${keys.length} cache keys to invalidate: ${keys.join(', ')}`,
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (keys.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           const promises = keys.map(async (key: string) => {
             try {
               await this.cacheManager.del(key);
@@ -113,7 +109,7 @@ export class ProductService implements IProductService {
           });
 
           await Promise.all(promises);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
           this.logger.log(`Invalidated ${keys.length} cache entries`);
         }
       } else {
@@ -121,15 +117,13 @@ export class ProductService implements IProductService {
           'Cache store does not support "keys" method. Cannot invalidate specific keys.',
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (typeof (this.cacheManager as any).clear === 'function') {
           this.logger.log('Using cacheManager.clear() as fallback');
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
           await (this.cacheManager as any).clear();
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (typeof (this.cacheManager as any).reset === 'function') {
           this.logger.log('Using cacheManager.reset() as fallback');
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
           await (this.cacheManager as any).reset();
         } else {
           this.logger.error('No clear/reset method found on cache manager');
@@ -151,7 +145,7 @@ export class ProductService implements IProductService {
 
     try {
       const response = await firstValueFrom(this.httpService.get(url));
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
       const items = response.data.items;
 
       for (const item of items) {
