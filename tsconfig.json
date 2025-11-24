@@ -14,10 +14,25 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./src",
-       "paths": {
-      "@common/*": ["common/*"],
-      "@providers/*": ["providers/*"],
-      "@controllers/*": ["controllers/*"]
+    "paths": {
+      "@common/*": [
+        "common/*"
+      ],
+      "@providers/*": [
+        "products/providers/*"
+      ],
+      "@controllers/*": [
+        "products/controllers/*"
+      ],
+      "@entity/*": [
+        "products/providers/*"
+      ],
+      "@reports/*": [
+        "reports/*"
+      ],
+      "@config/*": [
+        "config/*"
+      ]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -1,98 +1,293 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Product Management API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS-based REST API for managing products with data synchronization from Contentful CMS, Redis caching, and comprehensive reporting capabilities.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Database Configuration](#database-configuration)
+- [Initial Data Refresh](#initial-data-refresh)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Assumptions](#assumptions)
+- [AI Usage Disclosure](#ai-usage-disclosure)
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Public API
+- **Product Management**: CRUD operations with pagination and filtering
+- **Soft Delete**: Products are soft-deleted, not permanently removed
+- **Redis Caching**: Product queries are cached for 1 hour for improved performance
+- **Data Synchronization**: Automatic hourly sync from Contentful CMS
 
-## Project setup
+### Private API (JWT Protected)
+- **Deleted Products Report**: Percentage of deleted vs total products
+- **Non-Deleted Products Report**: Percentage with optional filters (price, date range)
+- **Products by Category Report**: Distribution of products across categories
 
-```bash
-$ npm install
+## Tech Stack
+
+- **Framework**: NestJS 11.x
+- **Database**: PostgreSQL 13
+- **ORM**: TypeORM
+- **Cache**: Redis (Alpine)
+- **External API**: Contentful CMS
+- **Documentation**: Swagger/OpenAPI
+- **Containerization**: Docker & Docker Compose
+- **Testing**: Jest
+
+## Prerequisites
+
+- **Docker Desktop**: Must be installed and running
+- **Node.js**: 18.x or higher (for local development)
+- **npm**: 9.x or higher
+
+## Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd test-apply-digital
+   ```
+
+2. **Install dependencies** (optional, for local development):
+   ```bash
+   npm install
+   ```
+
+## Database Configuration
+
+The application uses PostgreSQL running in Docker. Configuration is managed through environment variables in `docker-compose.yml`:
+
+```yaml
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=products
 ```
 
-## Compile and run the project
+### Database Schema
+
+The database schema is automatically created by TypeORM using the `synchronize: true` option. The main table is:
+
+**products**:
+- `id`: Primary key (UUID, auto-generated)
+- `contentfulId`: Unique identifier from Contentful
+- `sku`, `name`, `brand`, `model`, `category`, `color`: Product attributes
+- `price`, `currency`, `stock`: Pricing and inventory
+- `createdAt`, `updatedAt`: Timestamps
+- `deletedAt`: Soft delete timestamp (nullable)
+
+### Data Persistence
+
+Data is persisted using Docker volumes:
+- `postgres_data`: Stores all PostgreSQL data
+- Data survives container restarts (`docker-compose down`)
+- Data is deleted only with `docker-compose down -v`
+
+## Initial Data Refresh
+
+### Automatic Sync (Recommended)
+
+The application includes a Docker-based cron service that automatically syncs data from Contentful **every hour**.
+
+### Manual Sync
+
+To manually trigger a data refresh:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+curl -X POST http://localhost:3000/products/sync
 ```
 
-## Run tests
+This endpoint:
+1. Fetches all products from Contentful API
+2. Upserts them into PostgreSQL (based on `contentfulId`)
+3. Invalidates the Redis cache
+
+## Running the Application
+
+### Using Docker (Recommended)
+
+1. **Start all services**:
+   ```bash
+   docker-compose up --build
+   ```
+
+   This starts:
+   - NestJS API (port 3000)
+   - PostgreSQL (port 5432)
+   - Redis (port 6379)
+   - Cron service (for automatic sync)
+
+2. **Stop services**:
+   ```bash
+   docker-compose down
+   ```
+
+3. **Reset everything** (including data):
+   ```bash
+   docker-compose down -v
+   docker-compose up --build
+   ```
+
+### Development Mode
+
+The Docker setup includes **hot-reloading**. Any code changes will automatically restart the application inside the container.
+
+### Local Development (Without Docker)
+
+1. Ensure PostgreSQL and Redis are running locally
+2. Update environment variables in `.env` file
+3. Run:
+   ```bash
+   npm run start:dev
+   ```
+
+## API Documentation
+
+### Swagger UI
+
+Once the application is running, access the interactive API documentation at:
+
+**http://localhost:3000/api/docs**
+
+### Endpoints
+
+#### Public Endpoints
+
+- `GET /products` - List products (paginated, filterable)
+  - Query params: `page`, `limit`, `name`, `category`, `minPrice`, `maxPrice`
+- `DELETE /products/:id` - Soft delete a product
+- `POST /products/sync` - Manually trigger Contentful sync
+
+#### Private Endpoints (Require `Authorization: Bearer <token>`)
+
+- `GET /reports/deleted-percentage` - Deleted products report
+- `GET /reports/non-deleted-percentage` - Non-deleted products report
+  - Query params: `withPrice`, `startDate`, `endDate`
+- `GET /reports/products-by-category` - Products by category report
+
+### Example Requests
 
 ```bash
-# unit tests
-$ npm run test
+# Get products
+curl "http://localhost:3000/products?page=1&limit=5&category=Tools"
 
-# e2e tests
-$ npm run test:e2e
+# Delete product (use UUID from GET response)
+curl -X DELETE "http://localhost:3000/products/7e35aa47-0dc6-42d1-a158-4703987e1ce7"
 
-# test coverage
-$ npm run test:cov
+# Get report (with auth)
+curl -H "Authorization: Bearer test_token" \
+  "http://localhost:3000/reports/products-by-category"
 ```
 
-## Deployment
+## Testing
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Run Unit Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Run Tests with Coverage
 
-## Resources
+```bash
+npm run test:cov
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Run E2E Tests
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run test:e2e
+```
 
-## Support
+**Note**: E2E tests require the Docker environment to be running.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Project Structure
 
-## Stay in touch
+```
+src/
+├── products/              # Product module (renamed from publicModule)
+│   ├── controllers/       # REST controllers
+│   ├── providers/
+│   │   └── products/
+│   │       ├── adapters/  # Contentful adapter (Adapter pattern)
+│   │       ├── dto/       # Data Transfer Objects
+│   │       ├── entity/    # TypeORM entities
+│   │       ├── interfaces/# Service interfaces
+│   │       ├── module/    # Product module definition
+│   │       └── provider/  # Product service
+├── reports/               # Private reporting module
+│   ├── controllers/       # Report controllers (JWT protected)
+│   └── strategies/        # Report strategies (Strategy pattern)
+├── common/
+│   └── guards/            # Auth guard
+├── config/                # Configuration services
+│   └── services/          # DB config service
+├── app.module.ts          # Root module
+└── main.ts                # Application entry point
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+cron/                      # Docker cron service
+├── Dockerfile
+└── crontab                # Cron schedule
+```
 
-## License
+## Assumptions
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE)
+1. **Authentication**: The JWT guard performs a basic token format check (`Bearer <token>`). Full JWT validation is not implemented as it was not required for the test scope.
+
+2. **Contentful Schema**: The adapter assumes Contentful products have the following fields:
+   - `sku`, `name`, `brand`, `model`, `category`, `color`
+   - `price`, `currency`, `stock`
+   - `sys.id`, `sys.createdAt`
+
+3. **Caching Strategy**:
+   - Cache-aside pattern for reads
+   - Full cache invalidation on writes (sync/delete)
+   - 1-hour TTL for cached data
+
+4. **Date Range Filtering**: Uses the `createdAt` field from Contentful's `sys.createdAt` timestamp.
+
+5. **Soft Delete**: Products are never permanently deleted from the database. The `deletedAt` field is set instead.
+
+6. **SQL Injection Prevention**: TypeORM's query builder with parameterized queries is used throughout to prevent SQL injection.
+
+7. **Hot-Reloading**: The Docker setup mounts the local directory, enabling development without rebuilding containers.
+
+## Dependencies
+
+### Core Dependencies
+- `@nestjs/common`, `@nestjs/core`: NestJS framework
+- `@nestjs/typeorm`, `typeorm`: ORM
+- `pg`: PostgreSQL driver
+- `@nestjs/axios`, `rxjs`: HTTP client
+- `@nestjs/cache-manager`, `cache-manager`, `cache-manager-redis-store`: Redis caching
+- `@nestjs/config`: Configuration management
+- `@nestjs/swagger`, `swagger-ui-express`: API documentation
+- `class-validator`, `class-transformer`: DTO validation
+
+### Dev Dependencies
+- `@nestjs/testing`, `jest`, `ts-jest`: Testing
+- `typescript`, `ts-node`: TypeScript support
+- `eslint`, `prettier`: Code quality
+
+## AI Usage Disclosure
+
+This project was developed with assistance from AI tools (Google Gemini) for:
+- Code generation and refactoring
+- Documentation writing
+- Test creation
+- Architecture design suggestions
+
+All AI-generated code was reviewed, tested, and adapted to meet project requirements.
+
+---
+
+**Author**: Mateo Gomez
+**Date**: November 2025
+**Version**: 1.0.0
