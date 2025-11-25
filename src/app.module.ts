@@ -6,18 +6,23 @@ import { DbConfigService } from '@config/services/dbconfig.service';
 import { ProductModule } from '@providers/products/module/product.module';
 import { ReportsModule } from '@reports/reports.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      store: redisStore,
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      useFactory: async () => ({
+        store: await redisStore({
+          socket: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379', 10),
+          },
+        }),
+      }),
     }),
     AppConfigModule,
     TypeOrmModule.forRootAsync({
