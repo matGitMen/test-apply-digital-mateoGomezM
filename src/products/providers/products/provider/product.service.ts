@@ -92,8 +92,9 @@ export class ProductService implements IProductService {
 
       const store = (this.cacheManager as any).store;
 
-      if (store && typeof store.keys === 'function') {
-        const keys = await store.keys('products_*');
+      // cache-manager-redis-yet exposes the client
+      if (store && store.client) {
+        const keys = await store.client.keys('products_*');
 
         this.logger.log(
           `Found ${keys.length} cache keys to invalidate: ${keys.join(', ')}`,
