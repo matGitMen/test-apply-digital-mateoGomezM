@@ -276,3 +276,9 @@ cron/                      # Docker cron service
 - `typescript`, `ts-node`: TypeScript support
 - `eslint`, `prettier`: Code quality
 
+
+### IA Usage
+
+- Claude
+- ChatGPT
+- Gemini
