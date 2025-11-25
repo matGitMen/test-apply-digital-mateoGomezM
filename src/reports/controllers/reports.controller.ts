@@ -8,8 +8,11 @@ import {
   ProductsByCategoryReport,
 } from '@reports/strategies/report.strategy';
 import { AuthGuard } from '@common/guards/auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('reports')
+@ApiTags('reports')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(AuthGuard)
 export class ReportsController {
   constructor(
