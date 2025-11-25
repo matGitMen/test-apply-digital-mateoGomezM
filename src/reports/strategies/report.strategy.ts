@@ -50,11 +50,14 @@ export class NonDeletedProductsReport implements IReportStrategy {
     }
 
     const count = await qb.getCount();
-    const totalNonDeleted = await repo.count();
+    const totalProducts = await repo
+      .createQueryBuilder('product')
+      .withDeleted()
+      .getCount();
 
     return {
       count,
-      percentage: totalNonDeleted === 0 ? 0 : (count / totalNonDeleted) * 100,
+      percentage: totalProducts === 0 ? 0 : (count / totalProducts) * 100,
     };
   }
 }
