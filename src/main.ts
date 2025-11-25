@@ -11,6 +11,15 @@ async function bootstrap() {
     .setDescription('The Product Management API description')
     .setVersion('1.0')
     .addTag('products')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter JWT token for reports endpoints',
+      },
+      'JWT-auth',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
